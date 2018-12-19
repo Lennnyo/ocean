@@ -1,14 +1,10 @@
 p=$(shell nproc)
 
 compile:
-	@mkdir -p /tmp/mpiring
-	mpicxx ring.cpp -o /tmp/mpiring/ring
+	@mkdir -p /tmp/ocean
+	g++ main.cpp -o /tmp/ocean/main
 
 run:
-	mpirun -n $(p) /tmp/mpiring/ring
+	/tmp/ocean/main
 
-edit:
-	@gedit --new-window ring.cpp makefile &
 
-install:
-	sudo apt-get install libopenmpi-dev openmpi-bin
