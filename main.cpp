@@ -13,19 +13,18 @@ tile** initMap(){
 
     return map;
 }
-    
 
+tile** g_map = initMap();
 
 int main (void){
 
-    tile** map = initMap();
-    initFauna(map);
+    initFauna();
 
     for(int i = 0; i < SIZE; i++){
         for (int j =0; j < SIZE; j++){
-            if(map[i][j].occBy == fish) printf("F ");
-            else if(map[i][j].occBy == shark) printf("S ");
-            else if(map[i][j].occBy == plancton) printf("P ");
+            if(g_map[i][j].occBy == fish) printf("F ");
+            else if(g_map[i][j].occBy == shark) printf("S ");
+            else if(g_map[i][j].occBy == plancton) printf("P ");
             else printf("o ");
         }
         printf("\n");

@@ -1,9 +1,7 @@
-#define SIZE 151515151515151515151515151515              //size of th grid
+#define SIZE 15              //size of th grid
 #define NUM_OF_FISH 10      //initial number of fish, shark, plancton
 #define NUM_OF_SHARK 10
 #define NUM_OF_PLANCTON 10
 #define REPRODUCTION_AGE 12
 #define MOVES_TILL_DEATH 12
 #define SIM_STEPS 23        //Rounds till simulation Terminates
-
-
