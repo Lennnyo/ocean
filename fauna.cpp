@@ -12,21 +12,10 @@ struct Fauna{
     int posY;
 };
 
-struct tile{
-    tile() : occBy(none) {}
-    occ occBy;
-    Fauna* animal;
-};
-
-extern tile** g_map;
-
 struct Fish : Fauna{
     Fish() : age(0), roundsNotEaten(0) {}
     int age;
     int roundsNotEaten; 
-};
-
-struct Plancton : Fauna{
 };
 
 struct Shark : Fauna{
@@ -34,6 +23,21 @@ struct Shark : Fauna{
     int age;
     int roundsNotEaten;
 };
+
+struct Plancton : Fauna{
+};
+
+struct tile{
+    tile() : occBy(none) {}
+    occ occBy;
+    Fauna* animal;
+};
+
+struct Surround{
+    tile* t[4];
+};
+
+extern tile** g_map;
 
 std::vector<Fish*> fishes;
 Plancton planctons[NUM_OF_PLANCTON];
@@ -131,72 +135,87 @@ void plancEaten(Plancton* p){
     }
 }
 
-tile* scan(Fauna f){
-    tile surrounding[4];
+Surround scan(Fauna* f){
+    Surround s;
 
-    surrounding[0] = g_map[f.posX][f.posY+1];
-    surrounding[1] = g_map[f.posX+1][f.posY];
-    surrounding[2] = g_map[f.posX][f.posY-1];
-    surrounding[3] = g_map[f.posX-1][f.posY];
+    s.t[0] = &g_map[f->posX][(f->posY+1)%SIZE];          //MOD SIZE so if it leaves grid on one side it enters it on the other
+    s.t[1] = &g_map[(f->posX+1)%SIZE][f->posY];
+    s.t[2] = &g_map[f->posX][(SIZE+f->posY-1)%SIZE];
+    s.t[3] = &g_map[(SIZE+f->posX-1)%SIZE][f->posY];
 
-    return surrounding;
+printf("%d", f->posX);
+printf("%d", f->posY);
+    printf("\n");
+    return s;
+}
+
+void reproduce_F(Fish* f){
+    
+    Fish* newF = new Fish();
+    newF->posX = f->posX;
+    newF->posY = f->posY;
+
+    fishes.push_back(newF);
+
+    g_map[f->posX][f->posY].occBy = fish;
+    g_map[f->posX][f->posY].animal = newF;
 }
 
 void killOld(){
-    for(auto i = fishes.begin(); i != fishes.end();){
-        Fish* f = *i;
+    Fish* f;
+    for(int i = 0; i < fishes.size(); i++){
+        f = fishes[i];
         if(f->age >= MOVES_TILL_DEATH){
-            i = fishes.erase(i);
+            g_map[f->posX][f->posY].animal = nullptr;
+            g_map[f->posX][f->posY].occBy = none;
+            delete fishes[i]; 
+            fishes.erase(fishes.begin()+i);
+            printf("fish died\n");
         }else i++;
     }
 }
 
-void moveFish(Fish f){
-
-    tile* surr = scan(f); 
-
-
-    srand(time(0));
+void moveFish(Fish* f){
+    Surround s = scan(f); 
+    
     int x = rand()%4;
 
     for(int i = 0; i < 4; i++){
         
-        if(surr[x].occBy == none || surr[x].occBy == plancton){
+       if(s.t[x]->occBy == none || s.t[x]->occBy == plancton){
+
+            g_map[f->posX][f->posY].animal = nullptr;
+            g_map[f->posX][f->posY].occBy = none;
+            
             switch(x){
-                case 0: f.posY+1;
+                case 0: f->posY = (f->posY+1)%SIZE;
                     break;
-                case 1: f.posX+1;
+                case 1: f->posX = (f->posX+1)%SIZE;
                     break;
-                case 2: f.posY-1;
+                case 2: f->posY = (SIZE+f->posY-1)%SIZE;
                     break;
-                case 3: f.posX-1;
+                case 3: f->posX = (SIZE+f->posX-1)%SIZE;
                     break;
             }
 
-            if(surr[x].occBy == plancton){
-                Plancton* p = static_cast<Plancton*>(surr[x].animal);
+            if(s.t[x]->occBy == plancton){
+                Plancton* p = static_cast<Plancton*>(s.t[x]->animal);
                 plancEaten(p);
-                f.roundsNotEaten = 0;
-            }else f.roundsNotEaten++;
+                f->roundsNotEaten = 0;
+                printf("fish ate\n");
+            }else f->roundsNotEaten++;
 
-            surr[x].occBy = fish;
-            surr[x].animal = &f;
+            s.t[x]->occBy = fish;
+            s.t[x]->animal = f;
             
             //Check if old enough to reproduce and does if moved          
-            if(f.age >= REPRODUCTION_AGE){
-               
-                Fish* newF = new Fish();
-                newF->posX = f.posX;
-                newF->posY = f.posY;
-
-                fishes.push_back(newF);
-
-                g_map[f.posX][f.posY].occBy = fish;
-                g_map[f.posX][f.posY].animal = new Fish();
+            if(f->age >= REPRODUCTION_AGE){
+                reproduce_F(f);
             }
+            i = 100;
+            f->age++;
         }
         x = (x+1)%4;    
-        f.age++;
     } 
 }
 
