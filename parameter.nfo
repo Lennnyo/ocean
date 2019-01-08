@@ -1,6 +1,6 @@
-#define SIZE 10              //size of th grid
-#define NUM_OF_FISH 2     //initial number of fish, shark, plancton
-#define NUM_OF_SHARK 9
+#define SIZE 20              //size of th grid
+#define NUM_OF_FISH 15     //initial number of fish, shark, plancton
+#define NUM_OF_SHARK 15
 #define NUM_OF_PLANCTON 2
 #define REPRODUCTION_AGE 4
 #define MOVES_TILL_DEATH 5 

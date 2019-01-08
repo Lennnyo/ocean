@@ -1,7 +1,6 @@
 #include <stdio.h>
 
-#include "fauna.cpp"
-#include "parameter.nfo"
+#include "shark.cpp"
 
 tile** initMap(){
 
@@ -31,13 +30,17 @@ tile** g_map = initMap();
 int main (void){
 
     initFauna();
-
+    print_Map();
     for(int i = 0; i < SIM_STEPS; i++){
-        print_Map();
+        killOld();
         for(auto f : fishes){
             moveFish(f);
         }
-        killOld();
+
+        for(auto s: sharks){
+            moveShark(s);
+        }
+        print_Map();
     }
 
     return 0;

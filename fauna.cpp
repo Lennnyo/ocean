@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <algorithm>
 
 #include "parameter.nfo"
 
@@ -37,11 +38,20 @@ struct Surround{
     tile* t[4];
 };
 
+
+
+//Declarations
+
 extern tile** g_map;
 
 std::vector<Fish*> fishes;
 Plancton planctons[NUM_OF_PLANCTON];
 std::vector<Shark*> sharks;
+
+
+
+
+//initiate given number of fish, shark and plancton
 
 void initFauna(){
     int x,y;
@@ -113,6 +123,7 @@ void initFauna(){
     }
 }
 
+
 void plancEaten(Plancton* p){
     int x, y;
 
@@ -135,6 +146,9 @@ void plancEaten(Plancton* p){
     }
 }
 
+
+//retruns array with pointer to surroundig tiles
+
 Surround scan(Fauna* f){
     Surround s;
 
@@ -145,25 +159,17 @@ Surround scan(Fauna* f){
 
 printf("%d", f->posX);
 printf("%d", f->posY);
-    printf("\n");
     return s;
 }
 
-void reproduce_F(Fish* f){
-    
-    Fish* newF = new Fish();
-    newF->posX = f->posX;
-    newF->posY = f->posY;
 
-    fishes.push_back(newF);
-
-    g_map[f->posX][f->posY].occBy = fish;
-    g_map[f->posX][f->posY].animal = newF;
-}
+//goes through fish and shark vector and deletes Entries that haven't eaten for a given time
 
 void killOld(){
     Fish* f;
-    for(int i = 0; i < fishes.size(); i++){
+    Shark* s;
+    int tmpSize = fishes.size();
+    for(int i = 0; i < tmpSize; i){
         f = fishes[i];
         if(f->age >= MOVES_TILL_DEATH){
             g_map[f->posX][f->posY].animal = nullptr;
@@ -172,50 +178,22 @@ void killOld(){
             fishes.erase(fishes.begin()+i);
             printf("fish died\n");
         }else i++;
+        
+        fishes.size() <= 0 ? i = 100 : i = i;
+    }
+
+    for(int i = 0; i < tmpSize; i){
+        s = sharks[i];
+        if(s->age >= MOVES_TILL_DEATH){
+            g_map[s->posX][s->posY].animal = nullptr;
+            g_map[s->posX][s->posY].occBy = none;
+            delete sharks[i]; 
+            sharks.erase(sharks.begin()+i);
+            printf("shark died\n");
+        }else i++;
+
+        sharks.size() <= 0 ? i = 100 : i = i;
     }
 }
 
-void moveFish(Fish* f){
-    Surround s = scan(f); 
-    
-    int x = rand()%4;
-
-    for(int i = 0; i < 4; i++){
-        
-       if(s.t[x]->occBy == none || s.t[x]->occBy == plancton){
-
-            g_map[f->posX][f->posY].animal = nullptr;
-            g_map[f->posX][f->posY].occBy = none;
-            
-            switch(x){
-                case 0: f->posY = (f->posY+1)%SIZE;
-                    break;
-                case 1: f->posX = (f->posX+1)%SIZE;
-                    break;
-                case 2: f->posY = (SIZE+f->posY-1)%SIZE;
-                    break;
-                case 3: f->posX = (SIZE+f->posX-1)%SIZE;
-                    break;
-            }
-
-            if(s.t[x]->occBy == plancton){
-                Plancton* p = static_cast<Plancton*>(s.t[x]->animal);
-                plancEaten(p);
-                f->roundsNotEaten = 0;
-                printf("fish ate\n");
-            }else f->roundsNotEaten++;
-
-            s.t[x]->occBy = fish;
-            s.t[x]->animal = f;
-            
-            //Check if old enough to reproduce and does if moved          
-            if(f->age >= REPRODUCTION_AGE){
-                reproduce_F(f);
-            }
-            i = 100;
-            f->age++;
-        }
-        x = (x+1)%4;    
-    } 
-}
 
